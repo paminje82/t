@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🌈 신나는 구구단 나라!</title>
+  <meta name="description" content="초등학생을 위한 재미있고 화려한 구구단 학습 앱! 외우기, 퀴즈, 빈칸 채우기로 구구단을 마스터하자!" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- 배경 별똥별 컨테이너 -->
+  <div class="bg-stars" id="bgStars"></div>
+
+  <!-- 마스코트 캐릭터 -->
+  <div class="mascot" id="mascot">🐱</div>
+
+  <!-- 헤더 -->
+  <header class="app-header">
+    <h1 class="app-title">🌈 신나는 구구단 나라! 🌈</h1>
+    <p class="app-subtitle">구구단을 재미있게 배워요!</p>
+  </header>
+
+  <!-- 탭 네비게이션 -->
+  <nav class="tab-nav" role="tablist">
+    <button class="tab-btn active" id="tab-learn-btn" role="tab" aria-selected="true" aria-controls="tab-learn" onclick="switchTab('learn')">
+      📖 외우기
+    </button>
+    <button class="tab-btn" id="tab-quiz-btn" role="tab" aria-selected="false" aria-controls="tab-quiz" onclick="switchTab('quiz')">
+      🎯 퀴즈!
+    </button>
+    <button class="tab-btn" id="tab-fill-btn" role="tab" aria-selected="false" aria-controls="tab-fill" onclick="switchTab('fill')">
+      ✏️ 써봐!
+    </button>
+  </nav>
+
+  <!-- ===== 외우기 탭 ===== -->
+  <section class="tab-content active" id="tab-learn" role="tabpanel">
+    <div class="section-header">
+      <h2>몇 단을 배울까요?</h2>
+    </div>
+    <div class="dan-selector" id="danSelector">
+      <button class="dan-btn" id="dan-btn-2" onclick="showDan(2)">2단 🐰</button>
+      <button class="dan-btn" id="dan-btn-3" onclick="showDan(3)">3단 🐸</button>
+      <button class="dan-btn" id="dan-btn-4" onclick="showDan(4)">4단 🦊</button>
+      <button class="dan-btn" id="dan-btn-5" onclick="showDan(5)">5단 🐧</button>
+      <button class="dan-btn" id="dan-btn-6" onclick="showDan(6)">6단 🦄</button>
+      <button class="dan-btn" id="dan-btn-7" onclick="showDan(7)">7단 🐉</button>
+      <button class="dan-btn" id="dan-btn-8" onclick="showDan(8)">8단 🚀</button>
+      <button class="dan-btn" id="dan-btn-9" onclick="showDan(9)">9단 ⭐</button>
+    </div>
+    <div class="cards-grid" id="cardsGrid">
+      <div class="welcome-msg">
+        <div class="welcome-emoji">👆</div>
+        <p>위에서 단을 골라봐요!</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== 퀴즈 탭 ===== -->
+  <section class="tab-content" id="tab-quiz" role="tabpanel">
+    <!-- 레벨 선택 -->
+    <div class="quiz-level-bar">
+      <span>난이도:</span>
+      <button class="level-btn active" id="level-easy" onclick="setLevel('easy')">🌱 쉬움(2~5단)</button>
+      <button class="level-btn" id="level-normal" onclick="setLevel('normal')">🔥 보통(2~9단)</button>
+      <button class="level-btn" id="level-hard" onclick="setLevel('hard')">💥 어려움(섞기)</button>
+    </div>
+
+    <!-- 점수 & 콤보 -->
+    <div class="quiz-stats">
+      <div class="stat-box" id="scoreBox">
+        <span class="stat-label">점수</span>
+        <span class="stat-value" id="scoreDisplay">0</span>
+      </div>
+      <div class="stat-box combo-box" id="comboBox">
+        <span class="stat-label">콤보</span>
+        <span class="stat-value" id="comboDisplay">0</span>
+        <span class="combo-fire" id="comboFire">🔥</span>
+      </div>
+      <div class="stat-box" id="totalBox">
+        <span class="stat-label">문제수</span>
+        <span class="stat-value" id="totalDisplay">0</span>
+      </div>
+    </div>
+
+    <!-- 문제 영역 -->
+    <div class="quiz-card" id="quizCard">
+      <div class="quiz-question" id="quizQuestion">준비되면 시작 버튼을 눌러요! 🎮</div>
+      <div class="quiz-choices" id="quizChoices"></div>
+    </div>
+
+    <!-- 결과 메시지 -->
+    <div class="quiz-feedback" id="quizFeedback"></div>
+
+    <!-- 시작/다음 버튼 -->
+    <button class="quiz-start-btn" id="quizStartBtn" onclick="startQuiz()">🎮 퀴즈 시작!</button>
+    <button class="quiz-next-btn hidden" id="quizNextBtn" onclick="nextQuestion()">➡️ 다음 문제!</button>
+
+    <!-- 캔버스(폭죽) -->
+    <canvas id="confettiCanvas"></canvas>
+  </section>
+
+  <!-- ===== 써봐 탭 ===== -->
+  <section class="tab-content" id="tab-fill" role="tabpanel">
+    <div class="section-header">
+      <h2>빈칸을 채워봐요! ✏️</h2>
+      <div class="fill-controls">
+        <label for="fillDanSelect">단 선택: </label>
+        <select id="fillDanSelect" onchange="setupFill()">
+          <option value="all">전체 (2~9단)</option>
+          <option value="2">2단</option>
+          <option value="3">3단</option>
+          <option value="4">4단</option>
+          <option value="5">5단</option>
+          <option value="6">6단</option>
+          <option value="7">7단</option>
+          <option value="8">8단</option>
+          <option value="9">9단</option>
+        </select>
+        <button class="refresh-btn" onclick="setupFill()">🔀 새로 섞기</button>
+      </div>
+    </div>
+
+    <div class="fill-grid" id="fillGrid"></div>
+
+    <div class="fill-result hidden" id="fillResult">
+      <div class="fill-result-emoji" id="fillResultEmoji">🌟</div>
+      <div class="fill-result-msg" id="fillResultMsg"></div>
+      <button class="refresh-btn" onclick="setupFill()">다시 도전!</button>
+    </div>
+
+    <button class="check-btn" id="checkFillBtn" onclick="checkFill()">✅ 정답 확인!</button>
+  </section>
+
+  <!-- 숫자 입력 팝업 -->
+  <div class="modal-overlay hidden" id="inputModal" onclick="closeModal(event)">
+    <div class="modal-box" id="modalBox">
+      <div class="modal-problem" id="modalProblem"></div>
+      <input type="number" class="modal-input" id="modalInput" min="0" max="81" placeholder="?" />
+      <div class="modal-btns">
+        <button class="modal-ok-btn" onclick="submitModalAnswer()">확인 ✅</button>
+        <button class="modal-cancel-btn" onclick="closeModalManual()">취소 ❌</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 배지 팝업 -->
+  <div class="badge-overlay hidden" id="badgeOverlay">
+    <div class="badge-box">
+      <div class="badge-emoji">🏆</div>
+      <div class="badge-title">완벽해요!</div>
+      <div class="badge-msg" id="badgeMsg"></div>
+      <button class="badge-close-btn" onclick="closeBadge()">야호! 🎉</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
