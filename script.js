@@ -252,6 +252,11 @@ function checkAnswer(val, btn) {
     fireCombo(quizCombo);
     playSound('correct');
     if (quizCombo >= 3) launchConfetti();
+    
+    // 정답일 경우 0.8초 후 자동으로 다음 문제로 이동
+    setTimeout(() => {
+      if (quizActive) nextQuestion();
+    }, 800);
   } else {
     btn.classList.add('wrong');
     quizCombo = 0;
@@ -264,9 +269,9 @@ function checkAnswer(val, btn) {
     document.querySelectorAll('.choice-btn').forEach(b => {
       if (parseInt(b.textContent) === currentAnswer) b.classList.add('correct');
     });
+    // 오답일 경우에만 '다음 문제' 버튼 표시
+    document.getElementById('quizNextBtn').classList.remove('hidden');
   }
-
-  document.getElementById('quizNextBtn').classList.remove('hidden');
 }
 
 function updateStats() {
