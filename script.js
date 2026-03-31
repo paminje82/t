@@ -50,10 +50,43 @@ function switchTab(name) {
 /* ──────────────────────────────────────────
    4. [외우기 탭] 구구단 카드
 ────────────────────────────────────────── */
-const DAN_COLORS = {
-  2: '#ff6b6b', 3: '#ff9f43', 4: '#ffd32a', 5: '#a3cb38',
-  6: '#1dd1a1', 7: '#48dbfb', 8: '#54a0ff', 9: '#9b59b6'
-};
+const DAN_COLORS = {};
+(function initColors() {
+  const hues = [0, 30, 45, 90, 150, 180, 210, 270, 330, 10, 40, 60, 120, 170, 200, 240, 290, 310, 350, 20];
+  for (let i = 2; i <= 20; i++) {
+    DAN_COLORS[i] = `hsl(${hues[(i-1)%hues.length]}, 85%, 65%)`;
+  }
+})();
+
+const EMOJIS = ['🐰','🐸','🦊','🐧','🦄','🐉','🚀','⭐','🌈','🎉','🍎','🍦','🎈','💎','🛸','🍒','🎸','🏆','🍀','🪐'];
+
+function initSelectors() {
+  const danSelector = document.getElementById('danSelector');
+  const fillSelect = document.getElementById('fillDanSelect');
+  
+  if (danSelector) {
+    danSelector.innerHTML = '';
+    for (let i = 2; i <= 20; i++) {
+      const btn = document.createElement('button');
+      btn.className = 'dan-btn';
+      btn.id = 'dan-btn-' + i;
+      btn.style.backgroundColor = DAN_COLORS[i];
+      btn.style.color = (i === 4 || i === 7 || i === 9) ? '#333' : '#fff'; // Some colors need dark text
+      btn.innerHTML = `${i}단 ${EMOJIS[(i-2)%EMOJIS.length]}`;
+      btn.onclick = () => showDan(i);
+      danSelector.appendChild(btn);
+    }
+  }
+
+  if (fillSelect) {
+    for (let i = 2; i <= 20; i++) {
+      const opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = `${i}단`;
+      fillSelect.appendChild(opt);
+    }
+  }
+}
 
 function showDan(n) {
   // 선택된 버튼 표시
@@ -102,14 +135,17 @@ function setLevel(lvl) {
 }
 
 function getRange() {
-  if (quizLevel === 'easy')   return [2, 5];
-  if (quizLevel === 'hard')   return [2, 9];
-  return [2, 9];
+  if (quizLevel === 'easy')   return [2, 9];
+  if (quizLevel === 'hard')   return [2, 20];
+  return [2, 12];
 }
 
 function randInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
+
+let quizTimer = null;
+const TIME_LIMIT = 5; // 5초
 
 function startQuiz() {
   quizScore = 0; quizTotal = 0; quizCombo = 0;
@@ -117,6 +153,44 @@ function startQuiz() {
   document.getElementById('quizStartBtn').classList.add('hidden');
   quizActive = true;
   nextQuestion();
+}
+
+function startTimer() {
+  stopTimer();
+  const timerContainer = document.getElementById('timerContainer');
+  const timerBar = document.getElementById('timerBar');
+  timerContainer.style.display = 'block';
+  
+  let timeLeft = TIME_LIMIT;
+  timerBar.style.transform = 'scaleX(1)';
+  timerBar.style.background = 'linear-gradient(90deg, #1dd1a1, #ffd32a, #ff6b6b)';
+
+  quizTimer = setInterval(() => {
+    timeLeft -= 0.1;
+    const progress = timeLeft / TIME_LIMIT;
+    timerBar.style.transform = `scaleX(${progress})`;
+    
+    if (progress < 0.3) {
+      timerBar.style.background = '#ff4757';
+    }
+
+    if (timeLeft <= 0) {
+      stopTimer();
+      handleTimeout();
+    }
+  }, 100);
+}
+
+function stopTimer() {
+  if (quizTimer) clearInterval(quizTimer);
+  quizTimer = null;
+}
+
+function handleTimeout() {
+  if (!quizActive) return;
+  const dummyBtn = document.createElement('button'); // 가짜 버튼
+  checkAnswer(-1, dummyBtn); // -1은 오답 보장 (시간 초과)
+  document.getElementById('quizFeedback').textContent = '⏰ 시간 초과! 서둘러야 해요!';
 }
 
 function nextQuestion() {
@@ -135,9 +209,10 @@ function nextQuestion() {
   // 4지선다 생성
   const wrongSet = new Set([currentAnswer]);
   const choices = [currentAnswer];
+  const maxPossible = currentA * 9 + 20; // 대략적인 오답 범위
   while (choices.length < 4) {
-    const fake = randInt(1, 81);
-    if (!wrongSet.has(fake)) {
+    const fake = randInt(Math.max(1, currentAnswer - 20), currentAnswer + 20);
+    if (fake > 0 && !wrongSet.has(fake)) {
       wrongSet.add(fake);
       choices.push(fake);
     }
@@ -157,10 +232,13 @@ function nextQuestion() {
 
   quizTotal++;
   updateStats();
+  startTimer();
 }
 
 function checkAnswer(val, btn) {
   if (!quizActive) return;
+  stopTimer();
+  document.getElementById('timerContainer').style.display = 'none';
 
   document.querySelectorAll('.choice-btn').forEach(b => b.disabled = true);
 
@@ -315,7 +393,9 @@ let fillData = []; // { dan, i, answer, isBlank }
 function setupFill() {
   const selectEl = document.getElementById('fillDanSelect');
   const val = selectEl.value;
-  const danList = val === 'all' ? [2,3,4,5,6,7,8,9] : [parseInt(val)];
+  const danList = val === 'all' 
+    ? Array.from({length: 19}, (_, i) => i + 2) // 2~20
+    : [parseInt(val)];
 
   fillData = [];
   const grid = document.getElementById('fillGrid');
@@ -327,7 +407,8 @@ function setupFill() {
   danList.forEach(dan => {
     const block = document.createElement('div');
     block.className = 'fill-dan-block';
-    block.innerHTML = `<div class="fill-dan-title" style="color:${DAN_COLORS[dan]}">${dan}단 ${['🐰','🐸','🦊','🐧','🦄','🐉','🚀','⭐'][dan-2]}</div>`;
+    const emoji = EMOJIS[(dan-2)%EMOJIS.length];
+    block.innerHTML = `<div class="fill-dan-title" style="color:${DAN_COLORS[dan]}">${dan}단 ${emoji}</div>`;
 
     for (let i = 1; i <= 9; i++) {
       const answer = dan * i;
@@ -345,7 +426,7 @@ function setupFill() {
           <span>${i}</span>
           <span>=</span>
           <input type="number" class="fill-input" id="fill-${dan}-${i}"
-                 min="0" max="81" placeholder="?" />`;
+                 min="0" max="200" placeholder="?" />`;
       } else {
         row.innerHTML = `
           <span>${dan}</span>
@@ -418,6 +499,7 @@ function openModal(dan, i, inputId) {
   currentModalInputId = inputId;
   document.getElementById('modalProblem').textContent = `${dan} × ${i} = ?`;
   document.getElementById('modalInput').value = '';
+  document.getElementById('modalInput').max = dan * i + 50; 
   document.getElementById('inputModal').classList.remove('hidden');
   setTimeout(() => document.getElementById('modalInput').focus(), 50);
 }
@@ -517,6 +599,9 @@ function playSound(type) {
    11. 초기화
 ────────────────────────────────────────── */
 window.addEventListener('load', () => {
+  // 버튼 및 셀렉트박스 생성
+  initSelectors();
+
   // 써봐 탭 기본 세팅
   setupFill();
 

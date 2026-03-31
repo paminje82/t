@@ -43,14 +43,7 @@
       <h2>몇 단을 배울까요?</h2>
     </div>
     <div class="dan-selector" id="danSelector">
-      <button class="dan-btn" id="dan-btn-2" onclick="showDan(2)">2단 🐰</button>
-      <button class="dan-btn" id="dan-btn-3" onclick="showDan(3)">3단 🐸</button>
-      <button class="dan-btn" id="dan-btn-4" onclick="showDan(4)">4단 🦊</button>
-      <button class="dan-btn" id="dan-btn-5" onclick="showDan(5)">5단 🐧</button>
-      <button class="dan-btn" id="dan-btn-6" onclick="showDan(6)">6단 🦄</button>
-      <button class="dan-btn" id="dan-btn-7" onclick="showDan(7)">7단 🐉</button>
-      <button class="dan-btn" id="dan-btn-8" onclick="showDan(8)">8단 🚀</button>
-      <button class="dan-btn" id="dan-btn-9" onclick="showDan(9)">9단 ⭐</button>
+      <!-- JS에서 동적으로 생성됩니다 -->
     </div>
     <div class="cards-grid" id="cardsGrid">
       <div class="welcome-msg">
@@ -87,6 +80,11 @@
       </div>
     </div>
 
+    <!-- 타이머 바 -->
+    <div class="timer-container" id="timerContainer">
+      <div class="timer-bar" id="timerBar"></div>
+    </div>
+
     <!-- 문제 영역 -->
     <div class="quiz-card" id="quizCard">
       <div class="quiz-question" id="quizQuestion">준비되면 시작 버튼을 눌러요! 🎮</div>
@@ -111,15 +109,8 @@
       <div class="fill-controls">
         <label for="fillDanSelect">단 선택: </label>
         <select id="fillDanSelect" onchange="setupFill()">
-          <option value="all">전체 (2~9단)</option>
-          <option value="2">2단</option>
-          <option value="3">3단</option>
-          <option value="4">4단</option>
-          <option value="5">5단</option>
-          <option value="6">6단</option>
-          <option value="7">7단</option>
-          <option value="8">8단</option>
-          <option value="9">9단</option>
+          <option value="all">전체 (2~20단)</option>
+          <!-- JS에서 동적으로 생성됩니다 -->
         </select>
         <button class="refresh-btn" onclick="setupFill()">🔀 새로 섞기</button>
       </div>
